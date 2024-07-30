@@ -1,0 +1,19 @@
+controller:
+  config:
+    allow-snippet-annotations: "true"
+  service:
+    annotations:
+      service.beta.kubernetes.io/do-loadbalancer-enable-proxy-protocol: "true"
+      #service.beta.kubernetes.io/do-loadbalancer-protocol: "https"
+      service.beta.kubernetes.io/do-loadbalancer-size-unit: "1"
+      service.beta.kubernetes.io/do-loadbalancer-healthcheck-port: "80"
+      service.beta.kubernetes.io/do-loadbalancer-healthcheck-protocol: "http"
+      service.beta.kubernetes.io/do-loadbalancer-healthcheck-path: "/health"
+      service.beta.kubernetes.io/do-loadbalancer-healthcheck-check-interval-seconds: "3"
+      service.beta.kubernetes.io/do-loadbalancer-healthcheck-response-timeout-seconds: "5"
+      service.beta.kubernetes.io/do-loadbalancer-healthcheck-unhealthy-threshold: "3"
+      service.beta.kubernetes.io/do-loadbalancer-healthcheck-healthy-threshold: "5"
+      #service.beta.kubernetes.io/do-loadbalancer-http-ports: "80"
+      #service.beta.kubernetes.io/do-loadbalancer-http2-ports: "443"
+      #service.beta.kubernetes.io/do-loadbalancer-tls-ports: "443"
+      kubernetes.digitalocean.com/firewall-managed: "false"
