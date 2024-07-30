@@ -1,6 +1,6 @@
-#About
+# About
 
-###Generate important laravel kubernates files
+### Generate important laravel kubernates files
 
 ✅ init.yaml
 ✅ namespace.yaml
@@ -10,12 +10,12 @@
 ✅ pvc.yaml
 ✅ service.yaml
 
-###How to Use
+### How to Use
 
 ```php
 wget -q https://raw.githubusercontent.com/peter-tharwat/kubernates-laravel-generator/master/generator.sh ; sudo chmod +x generator.sh ; ./generator.sh -d example.com -n default
 # Replace example.com with your domain
 ```
 
-###Thanks
+### Thanks
 Made With Love By [PeterAyoub](https://PeterAyoub.me/)
