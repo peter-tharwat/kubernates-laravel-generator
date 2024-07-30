@@ -217,14 +217,12 @@ spec:
       - name: nginx-container-${slug_domain_name}
         image: petertharwat/nginx-1.27-github:v1.0.9
         resources:
-          #requests:
-          #  cpu: "250m"
-          #  memory: "250Mi"
-          #  #ephemeral-storage: "2Gi"
-          limits:
-            cpu: "1000m"
-            memory: "1000Mi"
-            #ephemeral-storage: "5Gi"
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
         livenessProbe:
           httpGet:
             path: /health-check-nginx
@@ -283,8 +281,47 @@ spec:
         - name: laravel-env-${slug_domain_name}
           configMap:
             name: laravel-env-${slug_domain_name}
-
-        
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: nginx-hpa-${slug_domain_name}
+  namespace: ${name_space}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: nginx-controller-${slug_domain_name}
+  minReplicas: 1
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 60
+      selectPolicy: Max
+      policies:
+        - type: Percent
+          value: 50
+          periodSeconds: 60
+        - type: Pods
+          value: 2
+          periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 20
+      selectPolicy: Max
+      policies:
+        - type: Percent
+          value: 100
+          periodSeconds: 15
+        - type: Pods
+          value: 2
+          periodSeconds: 15
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -305,14 +342,12 @@ spec:
         - name: php-fpm-container-${slug_domain_name}
           image: petertharwat/php-fpm-8.3-github:v1.0.9
           resources:
-            #requests:
-            #  cpu: "500m"
-            #  memory: "500Mi"
-            #  #ephemeral-storage: "2Gi"
+            requests:
+              cpu: "500m"
+              memory: "512Mi"
             limits:
               cpu: "1000m"
               memory: "1000Mi"
-              #ephemeral-storage: "5Gi"
           ports:
             - containerPort: 9000
 
@@ -382,7 +417,47 @@ spec:
             name: php-config-${slug_domain_name}
         #- name: log-volume
         #  emptyDir: {}
-
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: php-hpa-${slug_domain_name}
+  namespace: ${name_space}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: php-deployment-${slug_domain_name}
+  minReplicas: 1
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 60
+      selectPolicy: Max
+      policies:
+        - type: Percent
+          value: 50
+          periodSeconds: 60
+        - type: Pods
+          value: 2
+          periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 20
+      selectPolicy: Max
+      policies:
+        - type: Percent
+          value: 100
+          periodSeconds: 15
+        - type: Pods
+          value: 2
+          periodSeconds: 15 
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -403,14 +478,12 @@ spec:
         - name: queue-${slug_domain_name}
           image: petertharwat/php-fpm-8.3-github:v1.0.9
           resources:
-            #requests:
-            #  cpu: "250m"
-            #  memory: "250Mi"
-            #  #ephemeral-storage: "2Gi"
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
             limits:
-              cpu: "1000m"
-              memory: "1000Mi"
-              #ephemeral-storage: "5Gi"
+              cpu: "500m"
+              memory: "512Mi"
           livenessProbe:
             exec:
               command:
@@ -483,14 +556,12 @@ spec:
         - name: schedule-${slug_domain_name}
           image: petertharwat/php-fpm-8.3-github:v1.0.9
           resources:
-            #requests:
-            #  cpu: "250m"
-            #  memory: "250Mi"
-            #  #ephemeral-storage: "2Gi"
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
             limits:
-              cpu: "1000m"
-              memory: "1000Mi"
-              #ephemeral-storage: "5Gi"
+              cpu: "500m"
+              memory: "512Mi"
           livenessProbe:
             exec:
               command:
@@ -564,22 +635,56 @@ spec:
       - name: redis-${slug_domain_name}
         image: redis:6.2
         resources:
-          #requests:
-          #  cpu: "250m"
-          #  memory: "250Mi"
-          #  #ephemeral-storage: "2Gi"
-          limits:
-            cpu: "1000m"
-            memory: "1000Mi"
-            #ephemeral-storage: "5Gi"
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
         ports:
         - containerPort: 6379
 EOL
 
+mkdir nginx/
 cat <<EOL > nginx/values.yaml
 controller:
+  autoscaling:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 25
+    targetCPUUtilizationPercentage: 50
+    behavior:
+      scaleDown:
+        stabilizationWindowSeconds: 60
+        selectPolicy: Max
+        policies:
+          - type: Percent
+            value: 50
+            periodSeconds: 60
+          - type: Pods
+            value: 2
+            periodSeconds: 60
+      scaleUp:
+        stabilizationWindowSeconds: 5
+        selectPolicy: Max
+        policies:
+          - type: Percent
+            value: 100
+            periodSeconds: 15
+          - type: Pods
+            value: 2
+            periodSeconds: 15
   config:
+    use-proxy-protocol: "true"
     allow-snippet-annotations: "true"
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "512Mi"
+    limits:
+      cpu: "500m"
+      memory: "1000Mi"
+
   service:
     annotations:
       service.beta.kubernetes.io/do-loadbalancer-enable-proxy-protocol: "true"
@@ -596,6 +701,7 @@ controller:
       #service.beta.kubernetes.io/do-loadbalancer-http2-ports: "443"
       #service.beta.kubernetes.io/do-loadbalancer-tls-ports: "443"
       kubernetes.digitalocean.com/firewall-managed: "false"
+  
 EOL
 cat <<EOL > ingress.yaml
 apiVersion: networking.k8s.io/v1
