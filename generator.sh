@@ -67,6 +67,9 @@ data:
       </body>
       </html>
   site.conf: |
+      log_format custom '\$remote_addr - \$remote_user [\$time_local] "\$request" '
+                      'Headers: \$http_user_agent, \$http_cookie, \$http_referer, \$http_x_forwarded_for, \$http_host';
+
       gzip on;
       gzip_disable "msie6";
       gzip_vary on;
@@ -134,6 +137,11 @@ data:
               return 301 \$1\$3;
         }
 
+        #proxy_pass_request_headers on;
+        #proxy_set_header X-Forwarded-Proto \$scheme;
+        #proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        #proxy_set_header X-Real-IP \$remote_addr;
+        #proxy_set_header Host \$host;
             
        location ~*\.(?:js|jpg|jpeg|gif|png|css|tgz|gz|rar|bz2|doc|pdf|ppt|tar|wav|bmp|rtf|swf|ico|flv|txt|woff|woff2|svg|mp3|jpe?g,eot|ttf|svg)$ {
           access_log off;
@@ -146,17 +154,9 @@ data:
        }
 
        location / {
-
             if (\$host ~* ^www\.(.*)$) {
                 return 301 \$scheme://\$1\$request_uri;
             }
-
-            #proxy_pass_request_headers on;
-            #proxy_set_header X-Forwarded-Proto https;
-            #proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-            #proxy_set_header X-Real-IP \$remote_addr;
-            #proxy_set_header Host \$host;
-            
             
             add_header Access-Control-Allow-Origin *;
             try_files \$uri \$uri/ /index.php?\$query_string;
@@ -164,16 +164,11 @@ data:
 
        location ~ \.php$ {
 
+            
+
             if (\$host ~* ^www\.(.*)$) {
                 return 301 \$scheme://\$1\$request_uri;
             }
-
-
-            proxy_pass_request_headers on;
-            proxy_set_header X-Forwarded-Proto https;
-            proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-            proxy_set_header X-Real-IP \$remote_addr;
-            proxy_set_header Host \$host;
 
 
             try_files \$uri =404;
@@ -195,8 +190,6 @@ data:
         deny all;  
        }
       }
-  
-
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -675,8 +668,12 @@ controller:
             value: 2
             periodSeconds: 15
   config:
-    use-proxy-protocol: "true"
-    allow-snippet-annotations: "true"
+    allow-snippet-annotations: "false"
+    #enable-real-ip: "true"
+    use-forwarded-headers: "true"
+    proxy-real-ip-cidr: "0.0.0.0/0"
+    #use-proxy-protocol: "true"
+    #enable-real-ip: "true"
   resources:
     requests:
       cpu: "250m"
@@ -685,22 +682,22 @@ controller:
       cpu: "500m"
       memory: "1000Mi"
 
-  service:
-    annotations:
-      service.beta.kubernetes.io/do-loadbalancer-enable-proxy-protocol: "true"
-      #service.beta.kubernetes.io/do-loadbalancer-protocol: "https"
-      service.beta.kubernetes.io/do-loadbalancer-size-unit: "1"
-      service.beta.kubernetes.io/do-loadbalancer-healthcheck-port: "80"
-      service.beta.kubernetes.io/do-loadbalancer-healthcheck-protocol: "http"
-      service.beta.kubernetes.io/do-loadbalancer-healthcheck-path: "/health"
-      service.beta.kubernetes.io/do-loadbalancer-healthcheck-check-interval-seconds: "3"
-      service.beta.kubernetes.io/do-loadbalancer-healthcheck-response-timeout-seconds: "5"
-      service.beta.kubernetes.io/do-loadbalancer-healthcheck-unhealthy-threshold: "3"
-      service.beta.kubernetes.io/do-loadbalancer-healthcheck-healthy-threshold: "5"
-      #service.beta.kubernetes.io/do-loadbalancer-http-ports: "80"
-      #service.beta.kubernetes.io/do-loadbalancer-http2-ports: "443"
-      #service.beta.kubernetes.io/do-loadbalancer-tls-ports: "443"
-      kubernetes.digitalocean.com/firewall-managed: "false"
+  #service:
+  #  annotations:
+  #    service.beta.kubernetes.io/do-loadbalancer-enable-proxy-protocol: "true"
+  #    #service.beta.kubernetes.io/do-loadbalancer-protocol: "https"
+  #    service.beta.kubernetes.io/do-loadbalancer-size-unit: "1"
+  #    service.beta.kubernetes.io/do-loadbalancer-healthcheck-port: "80"
+  #    service.beta.kubernetes.io/do-loadbalancer-healthcheck-protocol: "http"
+  #    service.beta.kubernetes.io/do-loadbalancer-healthcheck-path: "/health"
+  #    service.beta.kubernetes.io/do-loadbalancer-healthcheck-check-interval-seconds: "3"
+  #    service.beta.kubernetes.io/do-loadbalancer-healthcheck-response-timeout-seconds: "5"
+  #    service.beta.kubernetes.io/do-loadbalancer-healthcheck-unhealthy-threshold: "3"
+  #    service.beta.kubernetes.io/do-loadbalancer-healthcheck-healthy-threshold: "5"
+  #    #service.beta.kubernetes.io/do-loadbalancer-http-ports: "80"
+  #    #service.beta.kubernetes.io/do-loadbalancer-http2-ports: "443"
+  #    #service.beta.kubernetes.io/do-loadbalancer-tls-ports: "443"
+  #    kubernetes.digitalocean.com/firewall-managed: "false"
   
 EOL
 cat <<EOL > ingress.yaml
