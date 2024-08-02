@@ -35,7 +35,7 @@ fi
 	
 
 
-
+#helm install superzaki-com ingress-nginx/ingress-nginx -f nginx/values.yaml
 
 cat <<EOL > deploy.yaml
 apiVersion: v1
@@ -128,7 +128,7 @@ data:
        sendfile off;  
 
 
-        location ~* /.well-known/acme-challenge/ {
+        location ~ /.well-known/acme-challenge {
             root /var/www/certbot;
             allow all;
         }
@@ -210,12 +210,12 @@ spec:
       - name: nginx-container-${slug_domain_name}
         image: petertharwat/nginx-1.27-github:v1.0.9
         resources:
-            requests:
-              cpu: "250m"
-              memory: "512Mi"
-            limits:
-              cpu: "500m"
-              memory: "512Mi"
+          requests:
+            cpu: "100m"
+            memory: "100Mi"
+          limits:
+            cpu: "1000m"
+            memory: "1000Mi"
         livenessProbe:
           httpGet:
             path: /health-check-nginx
@@ -287,34 +287,35 @@ spec:
     name: nginx-controller-${slug_domain_name}
   minReplicas: 1
   maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
   metrics:
   - type: Resource
     resource:
       name: cpu
       target:
         type: Utilization
-        averageUtilization: 70
+        averageUtilization: 75
   behavior:
     scaleDown:
-      stabilizationWindowSeconds: 60
+      stabilizationWindowSeconds: 300
       selectPolicy: Max
       policies:
         - type: Percent
           value: 50
-          periodSeconds: 60
+          periodSeconds: 10
         - type: Pods
-          value: 2
-          periodSeconds: 60
+          value: 1
+          periodSeconds: 10
     scaleUp:
-      stabilizationWindowSeconds: 20
+      stabilizationWindowSeconds: 60
       selectPolicy: Max
       policies:
         - type: Percent
           value: 100
-          periodSeconds: 15
+          periodSeconds: 5
         - type: Pods
           value: 2
-          periodSeconds: 15
+          periodSeconds: 5 
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -322,7 +323,7 @@ metadata:
   name: php-deployment-${slug_domain_name}
   namespace: ${name_space}
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       app: php-basic-${slug_domain_name}
@@ -337,10 +338,10 @@ spec:
           resources:
             requests:
               cpu: "500m"
-              memory: "512Mi"
+              memory: "500Mi"
             limits:
-              cpu: "1000m"
-              memory: "1000Mi"
+              cpu: "2000m"
+              memory: "2000Mi"
           ports:
             - containerPort: 9000
 
@@ -422,35 +423,35 @@ spec:
     kind: Deployment
     name: php-deployment-${slug_domain_name}
   minReplicas: 1
-  maxReplicas: 10
+  maxReplicas: 20
   metrics:
   - type: Resource
     resource:
       name: cpu
       target:
         type: Utilization
-        averageUtilization: 70
+        averageUtilization: 75
   behavior:
     scaleDown:
-      stabilizationWindowSeconds: 60
+      stabilizationWindowSeconds: 300
       selectPolicy: Max
       policies:
         - type: Percent
           value: 50
-          periodSeconds: 60
+          periodSeconds: 10
         - type: Pods
-          value: 2
-          periodSeconds: 60
+          value: 1
+          periodSeconds: 10
     scaleUp:
-      stabilizationWindowSeconds: 20
+      stabilizationWindowSeconds: 60
       selectPolicy: Max
       policies:
         - type: Percent
           value: 100
-          periodSeconds: 15
+          periodSeconds: 5
         - type: Pods
           value: 2
-          periodSeconds: 15 
+          periodSeconds: 5 
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -472,11 +473,11 @@ spec:
           image: petertharwat/php-fpm-8.3-github:v1.0.9
           resources:
             requests:
-              cpu: "250m"
-              memory: "512Mi"
+              cpu: "150m"
+              memory: "150Mi"
             limits:
-              cpu: "500m"
-              memory: "512Mi"
+              cpu: "1000m"
+              memory: "1000Mi"
           livenessProbe:
             exec:
               command:
@@ -550,11 +551,11 @@ spec:
           image: petertharwat/php-fpm-8.3-github:v1.0.9
           resources:
             requests:
-              cpu: "250m"
-              memory: "512Mi"
+              cpu: "150m"
+              memory: "150Mi"
             limits:
-              cpu: "500m"
-              memory: "512Mi"
+              cpu: "1000m"
+              memory: "1000Mi"
           livenessProbe:
             exec:
               command:
@@ -628,12 +629,12 @@ spec:
       - name: redis-${slug_domain_name}
         image: redis:6.2
         resources:
-            requests:
-              cpu: "250m"
-              memory: "512Mi"
-            limits:
-              cpu: "500m"
-              memory: "512Mi"
+          requests:
+            cpu: "50m"
+            memory: "100Mi"
+          limits:
+            cpu: "1000m"
+            memory: "1000Mi"
         ports:
         - containerPort: 6379
 EOL
@@ -641,64 +642,65 @@ EOL
 mkdir nginx/
 cat <<EOL > nginx/values.yaml
 controller:
-  autoscaling:
+  replicaCount: 1
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 500m
+      memory: 500Mi
+
+  ingressClassResource:
+    name: "ingress-${slug_domain_name}"
+    enabled: true
+    default: false
+  ingressClass: "ingress-${slug_domain_name}"
+
+  hpa:
     enabled: true
     minReplicas: 1
-    maxReplicas: 25
+    maxReplicas: 50
     targetCPUUtilizationPercentage: 50
+
     behavior:
-      scaleDown:
+      scaleUp:
         stabilizationWindowSeconds: 60
-        selectPolicy: Max
         policies:
           - type: Percent
-            value: 50
-            periodSeconds: 60
-          - type: Pods
-            value: 2
-            periodSeconds: 60
-      scaleUp:
-        stabilizationWindowSeconds: 5
-        selectPolicy: Max
+            value: 200
+            periodSeconds: 10
+      scaleDown:
+        stabilizationWindowSeconds: 300
         policies:
           - type: Percent
             value: 100
-            periodSeconds: 15
-          - type: Pods
-            value: 2
-            periodSeconds: 15
+            periodSeconds: 10
+    tolerance: 0.1
+
+
+  admissionWebhooks:
+    enabled: false
+    namespace: "${name_space}" # Specify the namespace here
+
+  # Service settings, including Proxy Protocol and Google Cloud Load Balancer annotations
+  service:
+    namespace: "${name_space}"
+    annotations:
+      ingress.kubernetes.io/enable-global-access: "true" # Enable global access
+      service.beta.kubernetes.io/external-traffic: "OnlyLocal" # Proxy Protocol
+      service.beta.kubernetes.io/external-traffic-policy: "Local"
+      service.beta.kubernetes.io/load-balancer-proxy-protocol: "*" # Enable Proxy Protocol
+
   config:
     allow-snippet-annotations: "false"
-    #enable-real-ip: "true"
     use-forwarded-headers: "true"
-    proxy-real-ip-cidr: "0.0.0.0/0"
+    enable-real-ip: "true"
     #use-proxy-protocol: "true"
-    #enable-real-ip: "true"
-  resources:
-    requests:
-      cpu: "250m"
-      memory: "512Mi"
-    limits:
-      cpu: "500m"
-      memory: "1000Mi"
 
-  #service:
-  #  annotations:
-  #    service.beta.kubernetes.io/do-loadbalancer-enable-proxy-protocol: "true"
-  #    #service.beta.kubernetes.io/do-loadbalancer-protocol: "https"
-  #    service.beta.kubernetes.io/do-loadbalancer-size-unit: "1"
-  #    service.beta.kubernetes.io/do-loadbalancer-healthcheck-port: "80"
-  #    service.beta.kubernetes.io/do-loadbalancer-healthcheck-protocol: "http"
-  #    service.beta.kubernetes.io/do-loadbalancer-healthcheck-path: "/health"
-  #    service.beta.kubernetes.io/do-loadbalancer-healthcheck-check-interval-seconds: "3"
-  #    service.beta.kubernetes.io/do-loadbalancer-healthcheck-response-timeout-seconds: "5"
-  #    service.beta.kubernetes.io/do-loadbalancer-healthcheck-unhealthy-threshold: "3"
-  #    service.beta.kubernetes.io/do-loadbalancer-healthcheck-healthy-threshold: "5"
-  #    #service.beta.kubernetes.io/do-loadbalancer-http-ports: "80"
-  #    #service.beta.kubernetes.io/do-loadbalancer-http2-ports: "443"
-  #    #service.beta.kubernetes.io/do-loadbalancer-tls-ports: "443"
-  #    kubernetes.digitalocean.com/firewall-managed: "false"
-  
+  defaultBackend:
+    enabled:false
+    
 EOL
 cat <<EOL > ingress.yaml
 apiVersion: networking.k8s.io/v1
@@ -708,8 +710,8 @@ metadata:
   namespace: ${name_space}
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
-    kubernetes.io/ingress.class: "nginx"
-    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    kubernetes.io/ingress.class: "ingress-${slug_domain_name}"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod-${slug_domain_name}"
     nginx.ingress.kubernetes.io/ssl-redirect: "false" #change it after ssl
     nginx.ingress.kubernetes.io/force-ssl-redirect: "false" #change it after ssl
     nginx.ingress.kubernetes.io/ssl-passthrough: "true"
@@ -719,7 +721,7 @@ metadata:
     nginx.ingress.kubernetes.io/x-forwarded-for: "\$proxy_add_x_forwarded_for"
     nginx.ingress.kubernetes.io/proxy-set-headers: "true"
 spec:
-  ingressClassName: nginx
+  ingressClassName: "ingress-${slug_domain_name}"
   rules:
   - host: ${domain_name}
     http:
@@ -867,36 +869,20 @@ data:
 EOL
 
 cat <<EOL > init.yaml
-apiVersion: storage.k8s.io/v1
-kind: StorageClass
-metadata:
-  name: nfs-storage
-provisioner: cluster.local/nfs
-reclaimPolicy: Retain
-parameters:
-  archiveOnDelete: "false"
----
 apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
 metadata:
-  name: letsencrypt-prod
+  name: letsencrypt-prod-${slug_domain_name}
 spec:
   acme:
     server: https://acme-v02.api.letsencrypt.org/directory
     email: support@${domain_name}
     privateKeySecretRef:
-      name: letsencrypt-prod
+      name: letsencrypt-prod-${slug_domain_name}
     solvers:
     - http01:
         ingress:
-          class: nginx
----
-apiVersion: networking.k8s.io/v1
-kind: IngressClass
-metadata:
-  name: nginx
-spec:
-  controller: k8s.io/ingress-nginx
+          class: "ingress-${slug_domain_name}"
 EOL
 
 
@@ -928,8 +914,12 @@ kubectl apply -f ingress.yaml"
 echo "👇 👇 👇 👇 👇"
 echo "Install Helm"
 echo "curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash && helm repo add jetstack https://charts.jetstack.io && \t
-helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx && helm repo add stable https://charts.helm.sh/stable && helm repo update && \t
-#helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --version v1.5.4 --set global.leaderElection.namespace=cert-manager --set installCRDs=true --set prometheus.enabled=false && \
-helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --version v1.9.1 --set installCRDs=true -f  certbot/values.yaml # && \t
-helm install my-nginx-ingress ingress-nginx/ingress-nginx --namespace default --version 4.11.1 --values=nginx/values.yaml && \t
-helm install nfs-provisioner stable/nfs-server-provisioner --namespace default --version 1.1.3"
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx && helm repo add stable https://charts.helm.sh/stable && helm repo update"
+
+echo "👇 👇 👇 👇 👇"
+echo "install Global cert manager"
+echo "helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --version v1.5.4 --set global.leaderElection.namespace=cert-manager --set installCRDs=true --set prometheus.enabled=false"
+
+echo "👇 👇 👇 👇 👇"
+echo "Create LoadBalancer"
+echo "helm install ngress-${slug_domain_name} ingress-nginx/ingress-nginx --namespace ${name_space} --create-namespace --version 4.11.1 --values=nginx/values.yaml --set controller.admissionWebhooks.enabled=false"
