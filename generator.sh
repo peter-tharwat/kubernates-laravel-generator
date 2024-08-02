@@ -214,8 +214,8 @@ spec:
             cpu: "100m"
             memory: "100Mi"
           limits:
-            cpu: "1000m"
-            memory: "1000Mi"
+            cpu: "200m"
+            memory: "200Mi"
         livenessProbe:
           httpGet:
             path: /health-check-nginx
@@ -286,15 +286,14 @@ spec:
     kind: Deployment
     name: nginx-controller-${slug_domain_name}
   minReplicas: 1
-  maxReplicas: 10
-  targetCPUUtilizationPercentage: 70
+  maxReplicas: 50
   metrics:
   - type: Resource
     resource:
       name: cpu
       target:
         type: Utilization
-        averageUtilization: 75
+        averageUtilization: 100
   behavior:
     scaleDown:
       stabilizationWindowSeconds: 300
@@ -311,7 +310,7 @@ spec:
       selectPolicy: Max
       policies:
         - type: Percent
-          value: 100
+          value: 50
           periodSeconds: 5
         - type: Pods
           value: 2
@@ -323,7 +322,7 @@ metadata:
   name: php-deployment-${slug_domain_name}
   namespace: ${name_space}
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: php-basic-${slug_domain_name}
@@ -423,14 +422,14 @@ spec:
     kind: Deployment
     name: php-deployment-${slug_domain_name}
   minReplicas: 1
-  maxReplicas: 20
+  maxReplicas: 50
   metrics:
   - type: Resource
     resource:
       name: cpu
       target:
         type: Utilization
-        averageUtilization: 75
+        averageUtilization: 100
   behavior:
     scaleDown:
       stabilizationWindowSeconds: 300
@@ -473,8 +472,8 @@ spec:
           image: petertharwat/php-fpm-8.3-github:v1.0.9
           resources:
             requests:
-              cpu: "150m"
-              memory: "150Mi"
+              cpu: "100m"
+              memory: "100Mi"
             limits:
               cpu: "1000m"
               memory: "1000Mi"
@@ -551,8 +550,8 @@ spec:
           image: petertharwat/php-fpm-8.3-github:v1.0.9
           resources:
             requests:
-              cpu: "150m"
-              memory: "150Mi"
+              cpu: "100m"
+              memory: "100Mi"
             limits:
               cpu: "1000m"
               memory: "1000Mi"
@@ -630,7 +629,7 @@ spec:
         image: redis:6.2
         resources:
           requests:
-            cpu: "50m"
+            cpu: "100m"
             memory: "100Mi"
           limits:
             cpu: "1000m"
@@ -645,11 +644,11 @@ controller:
   replicaCount: 1
   resources:
     requests:
-      cpu: 250m
-      memory: 512Mi
+      cpu: 100m
+      memory: 100Mi
     limits:
-      cpu: 500m
-      memory: 500Mi
+      cpu: 200m
+      memory: 200Mi
 
   ingressClassResource:
     name: "ingress-${slug_domain_name}"
@@ -661,7 +660,7 @@ controller:
     enabled: true
     minReplicas: 1
     maxReplicas: 50
-    targetCPUUtilizationPercentage: 50
+    targetCPUUtilizationPercentage: 80
 
     behavior:
       scaleUp:
