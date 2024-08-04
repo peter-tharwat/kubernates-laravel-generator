@@ -698,7 +698,7 @@ controller:
     #use-proxy-protocol: "true"
 
   defaultBackend:
-    enabled:false
+    enabled: false
     
 EOL
 cat <<EOL > ingress.yaml
@@ -921,4 +921,4 @@ echo "helm install cert-manager jetstack/cert-manager --namespace cert-manager -
 
 echo "👇 👇 👇 👇 👇"
 echo "Create LoadBalancer"
-echo "helm install ngress-${slug_domain_name} ingress-nginx/ingress-nginx --namespace ${name_space} --create-namespace --version 4.11.1 --values=nginx/values.yaml --set controller.admissionWebhooks.enabled=false"
+echo "helm install ingress-${slug_domain_name} ingress-nginx/ingress-nginx --namespace ${name_space} --create-namespace --version 4.11.1 --values=nginx/values.yaml --set controller.admissionWebhooks.enabled=false"
