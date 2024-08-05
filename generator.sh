@@ -286,7 +286,7 @@ spec:
     kind: Deployment
     name: nginx-controller-${slug_domain_name}
   minReplicas: 1
-  maxReplicas: 10
+  maxReplicas: 30
   metrics:
   - type: Resource
     resource:
@@ -306,7 +306,7 @@ spec:
           value: 1
           periodSeconds: 10
     scaleUp:
-      stabilizationWindowSeconds: 60
+      stabilizationWindowSeconds: 20
       selectPolicy: Max
       policies:
         - type: Percent
@@ -339,8 +339,8 @@ spec:
               cpu: "500m"
               memory: "500Mi"
             limits:
-              cpu: "2000m"
-              memory: "2000Mi"
+              cpu: "5000m"
+              memory: "5000Mi"
           ports:
             - containerPort: 9000
 
@@ -422,7 +422,7 @@ spec:
     kind: Deployment
     name: php-deployment-${slug_domain_name}
   minReplicas: 1
-  maxReplicas: 10
+  maxReplicas: 30
   metrics:
   - type: Resource
     resource:
@@ -442,7 +442,7 @@ spec:
           value: 1
           periodSeconds: 10
     scaleUp:
-      stabilizationWindowSeconds: 60
+      stabilizationWindowSeconds: 20
       selectPolicy: Max
       policies:
         - type: Percent
@@ -659,12 +659,12 @@ controller:
   hpa:
     enabled: true
     minReplicas: 1
-    maxReplicas: 10
+    maxReplicas: 30
     targetCPUUtilizationPercentage: 80
 
     behavior:
       scaleUp:
-        stabilizationWindowSeconds: 60
+        stabilizationWindowSeconds: 20
         policies:
           - type: Percent
             value: 200
@@ -719,6 +719,7 @@ metadata:
     nginx.ingress.kubernetes.io/set-real-ip-from: "0.0.0.0/0"
     nginx.ingress.kubernetes.io/x-forwarded-for: "\$proxy_add_x_forwarded_for"
     nginx.ingress.kubernetes.io/proxy-set-headers: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "1000m"
 spec:
   ingressClassName: "ingress-${slug_domain_name}"
   rules:
