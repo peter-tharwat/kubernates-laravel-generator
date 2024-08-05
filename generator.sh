@@ -286,7 +286,7 @@ spec:
     kind: Deployment
     name: nginx-controller-${slug_domain_name}
   minReplicas: 1
-  maxReplicas: 50
+  maxReplicas: 10
   metrics:
   - type: Resource
     resource:
@@ -422,7 +422,7 @@ spec:
     kind: Deployment
     name: php-deployment-${slug_domain_name}
   minReplicas: 1
-  maxReplicas: 50
+  maxReplicas: 10
   metrics:
   - type: Resource
     resource:
@@ -659,7 +659,7 @@ controller:
   hpa:
     enabled: true
     minReplicas: 1
-    maxReplicas: 50
+    maxReplicas: 10
     targetCPUUtilizationPercentage: 80
 
     behavior:
