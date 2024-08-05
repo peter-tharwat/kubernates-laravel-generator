@@ -690,7 +690,7 @@ controller:
       service.beta.kubernetes.io/external-traffic: "OnlyLocal" # Proxy Protocol
       service.beta.kubernetes.io/external-traffic-policy: "Local"
       service.beta.kubernetes.io/load-balancer-proxy-protocol: "*" # Enable Proxy Protocol
-
+      #service.beta.kubernetes.io/vultr-loadbalancer-proxy-protocol: v2
   config:
     allow-snippet-annotations: "false"
     use-forwarded-headers: "true"
@@ -914,6 +914,9 @@ echo "👇 👇 👇 👇 👇"
 echo "Install Helm"
 echo "curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash && helm repo add jetstack https://charts.jetstack.io && \t
 helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx && helm repo add stable https://charts.helm.sh/stable && helm repo update"
+
+echo "Install Matrix for statistics"
+echo "kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml"
 
 echo "👇 👇 👇 👇 👇"
 echo "install Global cert manager"
