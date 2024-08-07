@@ -17,8 +17,8 @@
 
 ```bash
 -d for domain name (example.com)
--n for name space (example) optional (use default namespace)
--i for ingress name (ingress-example) optional (generate unique name based on domain name)
+-n for name space (example) optional (use default namespace) <example>-namespace
+-i for ingress name (ingress-example) optional (generate unique name based on domain name) ingress-<name>
 ```
 
 ```bash
