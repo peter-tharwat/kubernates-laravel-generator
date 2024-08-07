@@ -2,14 +2,16 @@
 
 ## Generate important laravel kubernates files
 
-### ✅ nginx/values.yaml
-### ✅ init.yaml
-### ✅ namespace.yaml
-### ✅ prod-env.yaml
-### ✅ deploy.yaml
-### ✅ ingress.yaml
-### ✅ pvc.yaml
-### ✅ service.yaml
+```
+✅ nginx/values.yaml
+✅ init.yaml
+✅ namespace.yaml
+✅ prod-env.yaml
+✅ deploy.yaml
+✅ ingress.yaml
+✅ pvc.yaml
+✅ service.yaml
+```
 
 ## How to Use
 
