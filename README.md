@@ -20,7 +20,8 @@
 -n for name space (example) optional (use default namespace)
 -i for ingress name (ingress-example) optional (generate unique name based on domain name)
 ```
-```php
+
+```bash
 wget -q -O generator.sh https://raw.githubusercontent.com/peter-tharwat/kubernates-laravel-generator/master/generator.sh ; chmod +x generator.sh ; ./generator.sh -d example.com -n default
 # Replace example.com with your domain
 ```
