@@ -292,7 +292,7 @@ spec:
     kind: Deployment
     name: nginx-controller-${slug_domain_name}
   minReplicas: 1
-  maxReplicas: 30
+  maxReplicas: 20
   metrics:
   - type: Resource
     resource:
@@ -342,11 +342,11 @@ spec:
           image: petertharwat/php-fpm-8.3-github:v1.0.9
           resources:
             requests:
-              cpu: "500m"
-              memory: "500Mi"
+              cpu: "200m"
+              memory: "200Mi"
             limits:
-              cpu: "5000m"
-              memory: "5000Mi"
+              cpu: "1200m"
+              memory: "1200Mi"
           ports:
             - containerPort: 9000
 
@@ -428,7 +428,7 @@ spec:
     kind: Deployment
     name: php-deployment-${slug_domain_name}
   minReplicas: 1
-  maxReplicas: 30
+  maxReplicas: 20
   metrics:
   - type: Resource
     resource:
@@ -665,7 +665,7 @@ controller:
   hpa:
     enabled: true
     minReplicas: 1
-    maxReplicas: 30
+    maxReplicas: 20
     targetCPUUtilizationPercentage: 80
 
     behavior:
@@ -850,7 +850,7 @@ spec:
     - ReadWriteMany
   resources:
     requests:
-      storage: 10Gi
+      storage: 1Gi
   storageClassName: "nfs-storage"
 EOL
 
@@ -918,17 +918,10 @@ kubectl apply -f service.yaml && \t
 kubectl apply -f ingress.yaml"
 
 echo "👇 👇 👇 👇 👇"
-echo "Install Helm"
+echo "Install Helm && Matrix && cert manager"
 echo "curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash && helm repo add jetstack https://charts.jetstack.io && \t
-helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx && helm repo add stable https://charts.helm.sh/stable && helm repo update"
-
-echo "Install Matrix for statistics"
-echo "kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml"
-
-echo "👇 👇 👇 👇 👇"
-echo "install Global cert manager"
-echo "helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --version v1.5.4 --set global.leaderElection.namespace=cert-manager --set installCRDs=true --set prometheus.enabled=false"
-
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx && helm repo add stable https://charts.helm.sh/stable && helm repo update && kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml && helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --version v1.5.4 --set global.leaderElection.namespace=cert-manager --set installCRDs=true --set prometheus.enabled=false"
+ 
 echo "👇 👇 👇 👇 👇"
 echo "Create LoadBalancer"
 echo "helm install ${ingress_name} ingress-nginx/ingress-nginx --namespace ${name_space} --create-namespace --version 4.11.1 --values=nginx/values.yaml --set controller.admissionWebhooks.enabled=false"
