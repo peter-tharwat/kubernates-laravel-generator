@@ -832,7 +832,7 @@ metadata:
   namespace: ${name_space}-namespace
 spec:
   capacity:
-    storage: 10Gi
+    storage: 1Gi
   accessModes:
     - ReadWriteMany
   storageClassName: "nfs-storage"
