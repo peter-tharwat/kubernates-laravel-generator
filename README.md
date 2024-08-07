@@ -1,17 +1,17 @@
 # About
 
-### Generate important laravel kubernates files
+## Generate important laravel kubernates files
 
-✅ nginx/values.yaml
-✅ init.yaml
-✅ namespace.yaml
-✅ prod-env.yaml
-✅ deploy.yaml
-✅ ingress.yaml
-✅ pvc.yaml
-✅ service.yaml
+### ✅ nginx/values.yaml
+### ✅ init.yaml
+### ✅ namespace.yaml
+### ✅ prod-env.yaml
+### ✅ deploy.yaml
+### ✅ ingress.yaml
+### ✅ pvc.yaml
+### ✅ service.yaml
 
-### How to Use
+## How to Use
 
 ```php
 -d for domain name (example.com)
@@ -23,5 +23,5 @@ wget -q -O generator.sh https://raw.githubusercontent.com/peter-tharwat/kubernat
 # Replace example.com with your domain
 ```
 
-### Thanks
+# Thanks
 Made With Love By [PeterAyoub](https://PeterAyoub.me/)
