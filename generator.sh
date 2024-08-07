@@ -8,7 +8,7 @@ default_repo_url="https://token@github.com/user/repo.git"
 
  
 
-while getopts "d:n:r:" opt; do
+while getopts "d:n:r:i:" opt; do
   case ${opt} in
     d)
       domain_name=${OPTARG}
