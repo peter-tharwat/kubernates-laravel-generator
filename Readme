@@ -2,6 +2,7 @@
 
 ### Generate important laravel kubernates files
 
+✅ nginx/values.yaml
 ✅ init.yaml
 ✅ namespace.yaml
 ✅ prod-env.yaml
@@ -18,7 +19,7 @@
 -i for ingress name (ingress-example) optional (generate unique name based on domain name)
 ```
 ```php
-wget -q https://raw.githubusercontent.com/peter-tharwat/kubernates-laravel-generator/master/generator.sh ; sudo chmod +x generator.sh ; ./generator.sh -d example.com -n default
+wget -q -O generator.sh https://raw.githubusercontent.com/peter-tharwat/kubernates-laravel-generator/master/generator.sh ; chmod +x generator.sh ; ./generator.sh -d example.com -n default
 # Replace example.com with your domain
 ```
 
