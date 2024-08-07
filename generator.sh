@@ -19,6 +19,9 @@ while getopts "d:n:r:" opt; do
     r)
       repo_url=${OPTARG}
       ;;
+    i)
+      ingress_name=${OPTARG}
+      ;;
   esac
 done
 
@@ -32,7 +35,10 @@ slug_domain_name=$(echo "$domain_name" | sed "s/\./-/g")
 if [ "$name_space" != "default" ]; then
 	name_space="$name_space-namespace"
 fi
-	
+
+if [ "$ingress_name" == "" ]; then
+  ingress_name="ingress-${slug_domain_name}"
+fi
 
 
 #helm install superzaki-com ingress-nginx/ingress-nginx -f nginx/values.yaml
@@ -651,10 +657,10 @@ controller:
       memory: 200Mi
 
   ingressClassResource:
-    name: "ingress-${slug_domain_name}"
+    name: "${ingress_name}"
     enabled: true
     default: false
-  ingressClass: "ingress-${slug_domain_name}"
+  ingressClass: "${ingress_name}"
 
   hpa:
     enabled: true
@@ -705,11 +711,11 @@ cat <<EOL > ingress.yaml
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: ingress-${slug_domain_name}
+  name: ${ingress_name}
   namespace: ${name_space}
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
-    kubernetes.io/ingress.class: "ingress-${slug_domain_name}"
+    kubernetes.io/ingress.class: "${ingress_name}"
     cert-manager.io/cluster-issuer: "letsencrypt-prod-${slug_domain_name}"
     nginx.ingress.kubernetes.io/ssl-redirect: "false" #change it after ssl
     nginx.ingress.kubernetes.io/force-ssl-redirect: "false" #change it after ssl
@@ -721,7 +727,7 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-set-headers: "true"
     nginx.ingress.kubernetes.io/proxy-body-size: "1000m"
 spec:
-  ingressClassName: "ingress-${slug_domain_name}"
+  ingressClassName: "${ingress_name}"
   rules:
   - host: ${domain_name}
     http:
@@ -882,7 +888,7 @@ spec:
     solvers:
     - http01:
         ingress:
-          class: "ingress-${slug_domain_name}"
+          class: "${ingress_name}"
 EOL
 
 
@@ -925,4 +931,4 @@ echo "helm install cert-manager jetstack/cert-manager --namespace cert-manager -
 
 echo "👇 👇 👇 👇 👇"
 echo "Create LoadBalancer"
-echo "helm install ingress-${slug_domain_name} ingress-nginx/ingress-nginx --namespace ${name_space} --create-namespace --version 4.11.1 --values=nginx/values.yaml --set controller.admissionWebhooks.enabled=false"
+echo "helm install ${ingress_name} ingress-nginx/ingress-nginx --namespace ${name_space} --create-namespace --version 4.11.1 --values=nginx/values.yaml --set controller.admissionWebhooks.enabled=false"
