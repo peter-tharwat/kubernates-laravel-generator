@@ -711,7 +711,7 @@ cat <<EOL > ingress.yaml
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: ${ingress_name}
+  name: "ingress-${slug_domain_name}""
   namespace: ${name_space}
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
