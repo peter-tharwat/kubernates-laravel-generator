@@ -711,7 +711,7 @@ cat <<EOL > ingress.yaml
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: "ingress-${slug_domain_name}""
+  name: "ingress-${slug_domain_name}"
   namespace: ${name_space}
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
@@ -920,7 +920,7 @@ kubectl apply -f ingress.yaml"
 echo "👇 👇 👇 👇 👇"
 echo "Install Helm && Matrix && cert manager"
 echo "curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash && helm repo add jetstack https://charts.jetstack.io && \t
-helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx && helm repo add stable https://charts.helm.sh/stable && helm repo update && kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml && helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --version v1.5.4 --set global.leaderElection.namespace=cert-manager --set installCRDs=true --set prometheus.enabled=false"
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx && helm repo add stable https://charts.helm.sh/stable && helm repo update && kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml && helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --version v1.5.4 --set global.leaderElection.namespace=cert-manager --set leader-elect=false --set installCRDs=true --set prometheus.enabled=false"
  
 echo "👇 👇 👇 👇 👇"
 echo "Create LoadBalancer"
