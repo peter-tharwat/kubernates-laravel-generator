@@ -662,7 +662,7 @@ controller:
     default: false
   ingressClass: "${ingress_name}"
 
-  hpa:
+  autoscaling:
     enabled: true
     minReplicas: 1
     maxReplicas: 20
@@ -673,13 +673,13 @@ controller:
         stabilizationWindowSeconds: 20
         policies:
           - type: Percent
-            value: 200
+            value: 25
             periodSeconds: 10
       scaleDown:
         stabilizationWindowSeconds: 300
         policies:
           - type: Percent
-            value: 100
+            value: 25
             periodSeconds: 10
     tolerance: 0.1
 
