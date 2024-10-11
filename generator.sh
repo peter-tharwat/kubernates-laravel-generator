@@ -646,15 +646,21 @@ EOL
 
 mkdir nginx/
 cat <<EOL > nginx/values.yaml
+
 controller:
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      
   replicaCount: 1
   resources:
     requests:
       cpu: 100m
-      memory: 100Mi
-    limits:
-      cpu: 200m
       memory: 200Mi
+    limits:
+      cpu: 500m
+      memory: 1000Mi
 
   ingressClassResource:
     name: "${ingress_name}"
@@ -666,6 +672,7 @@ controller:
     enabled: true
     minReplicas: 1
     maxReplicas: 20
+    targetMemoryUtilizationPercentage: null
     targetCPUUtilizationPercentage: 80
 
     behavior:
@@ -673,13 +680,13 @@ controller:
         stabilizationWindowSeconds: 20
         policies:
           - type: Percent
-            value: 25
+            value: 50
             periodSeconds: 10
       scaleDown:
         stabilizationWindowSeconds: 300
         policies:
           - type: Percent
-            value: 25
+            value: 50
             periodSeconds: 10
     tolerance: 0.1
 
@@ -696,7 +703,9 @@ controller:
       service.beta.kubernetes.io/external-traffic: "OnlyLocal" # Proxy Protocol
       service.beta.kubernetes.io/external-traffic-policy: "Local"
       service.beta.kubernetes.io/load-balancer-proxy-protocol: "*" # Enable Proxy Protocol
+      service.beta.kubernetes.io/vultr-loadbalancer-node-count: 9
       #service.beta.kubernetes.io/vultr-loadbalancer-proxy-protocol: v2
+
   config:
     allow-snippet-annotations: "false"
     use-forwarded-headers: "true"
@@ -705,6 +714,7 @@ controller:
 
   defaultBackend:
     enabled: false
+    
     
 EOL
 cat <<EOL > ingress.yaml
