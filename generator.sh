@@ -299,14 +299,14 @@ spec:
       name: cpu
       target:
         type: Utilization
-        averageUtilization: 100
+        averageUtilization: 80
   behavior:
     scaleDown:
       stabilizationWindowSeconds: 300
-      selectPolicy: Max
+      selectPolicy: Min
       policies:
         - type: Percent
-          value: 50
+          value: 20
           periodSeconds: 10
         - type: Pods
           value: 1
@@ -316,7 +316,7 @@ spec:
       selectPolicy: Max
       policies:
         - type: Percent
-          value: 50
+          value: 20
           periodSeconds: 5
         - type: Pods
           value: 2
@@ -435,14 +435,14 @@ spec:
       name: cpu
       target:
         type: Utilization
-        averageUtilization: 100
+        averageUtilization: 80
   behavior:
     scaleDown:
       stabilizationWindowSeconds: 300
-      selectPolicy: Max
+      selectPolicy: Min
       policies:
         - type: Percent
-          value: 50
+          value: 20
           periodSeconds: 10
         - type: Pods
           value: 1
@@ -452,11 +452,11 @@ spec:
       selectPolicy: Max
       policies:
         - type: Percent
-          value: 100
+          value: 20
           periodSeconds: 5
         - type: Pods
           value: 2
-          periodSeconds: 5 
+          periodSeconds: 5  
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -699,12 +699,12 @@ controller:
   service:
     namespace: "${name_space}"
     annotations:
-      ingress.kubernetes.io/enable-global-access: "true" # Enable global access
-      service.beta.kubernetes.io/external-traffic: "OnlyLocal" # Proxy Protocol
-      service.beta.kubernetes.io/external-traffic-policy: "Local"
-      service.beta.kubernetes.io/load-balancer-proxy-protocol: "*" # Enable Proxy Protocol
-      service.beta.kubernetes.io/vultr-loadbalancer-node-count: 9
-      #service.beta.kubernetes.io/vultr-loadbalancer-proxy-protocol: v2
+      service.beta.kubernetes.io/vultr-loadbalancer-label: "${name_space}"
+      service.beta.kubernetes.io/vultr-loadbalancer-protocol: "tcp"
+      service.beta.kubernetes.io/vultr-loadbalancer-backend-protocol: "http"
+      service.beta.kubernetes.io/vultr-loadbalancer-ssl-pass-through: "true"
+      service.beta.kubernetes.io/vultr-loadbalancer-node-count: 1
+      service.beta.kubernetes.io/vultr-loadbalancer-proxy-protocol: "false"
 
   config:
     allow-snippet-annotations: "false"
