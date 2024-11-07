@@ -37,7 +37,7 @@ if [ "$name_space" != "default" ]; then
 fi
 
 if [ "$ingress_name" == "" ]; then
-  ingress_name="ingress-${slug_domain_name}"
+  ingress_name="${slug_domain_name}"
 fi
 
 
@@ -217,11 +217,11 @@ spec:
         image: petertharwat/nginx-1.27-github:v1.0.9
         resources:
           requests:
-            cpu: "100m"
-            memory: "100Mi"
-          limits:
             cpu: "200m"
             memory: "200Mi"
+          limits:
+            cpu: "500m"
+            memory: "500Mi"
         livenessProbe:
           httpGet:
             path: /health-check-nginx
@@ -319,7 +319,7 @@ spec:
           value: 20
           periodSeconds: 5
         - type: Pods
-          value: 2
+          value: 1
           periodSeconds: 5 
 ---
 apiVersion: apps/v1
@@ -342,11 +342,11 @@ spec:
           image: petertharwat/php-fpm-8.3-github:v1.0.9
           resources:
             requests:
-              cpu: "200m"
-              memory: "200Mi"
+              cpu: "1000m"
+              memory: "1000Mi"
             limits:
-              cpu: "1200m"
-              memory: "1200Mi"
+              cpu: "4000m"
+              memory: "4000Mi"
           ports:
             - containerPort: 9000
 
@@ -455,7 +455,7 @@ spec:
           value: 20
           periodSeconds: 5
         - type: Pods
-          value: 2
+          value: 1
           periodSeconds: 5  
 ---
 apiVersion: apps/v1
@@ -478,8 +478,8 @@ spec:
           image: petertharwat/php-fpm-8.3-github:v1.0.9
           resources:
             requests:
-              cpu: "100m"
-              memory: "100Mi"
+              cpu: "250m"
+              memory: "250Mi"
             limits:
               cpu: "1000m"
               memory: "1000Mi"
@@ -556,8 +556,8 @@ spec:
           image: petertharwat/php-fpm-8.3-github:v1.0.9
           resources:
             requests:
-              cpu: "100m"
-              memory: "100Mi"
+              cpu: "250m"
+              memory: "250Mi"
             limits:
               cpu: "1000m"
               memory: "1000Mi"
@@ -648,18 +648,18 @@ mkdir nginx/
 cat <<EOL > nginx/values.yaml
 
 controller:
-  metrics:
-    enabled: true
-    serviceMonitor:
-      enabled: true
+  #metrics:
+  #  enabled: false
+  #  serviceMonitor:
+  #    enabled: false
       
   replicaCount: 1
   resources:
     requests:
-      cpu: 100m
-      memory: 200Mi
+      cpu: 250m
+      memory: 250Mi
     limits:
-      cpu: 500m
+      cpu: 1000m
       memory: 1000Mi
 
   ingressClassResource:
@@ -699,12 +699,21 @@ controller:
   service:
     namespace: "${name_space}"
     annotations:
+
       service.beta.kubernetes.io/vultr-loadbalancer-label: "${name_space}"
       service.beta.kubernetes.io/vultr-loadbalancer-protocol: "tcp"
       service.beta.kubernetes.io/vultr-loadbalancer-backend-protocol: "http"
       service.beta.kubernetes.io/vultr-loadbalancer-ssl-pass-through: "true"
       service.beta.kubernetes.io/vultr-loadbalancer-node-count: 1
       service.beta.kubernetes.io/vultr-loadbalancer-proxy-protocol: "false"
+      
+      service.beta.kubernetes.io/do-loadbalancer-name: "${name_space}"
+      service.beta.kubernetes.io/do-loadbalancer-enable-proxy-protocol: "false"
+      service.beta.kubernetes.io/do-loadbalancer-protocol: "tcp"
+      service.beta.kubernetes.io/do-loadbalancer-tls-ports: "443"
+      service.beta.kubernetes.io/do-loadbalancer-tls-passthrough: "true"
+      service.beta.kubernetes.io/do-loadbalancer-size-unit: "1"
+
 
   config:
     allow-snippet-annotations: "false"
@@ -721,7 +730,7 @@ cat <<EOL > ingress.yaml
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: "ingress-${slug_domain_name}"
+  name: "${slug_domain_name}"
   namespace: ${name_space}
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
