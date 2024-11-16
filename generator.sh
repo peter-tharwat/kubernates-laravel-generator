@@ -914,6 +914,24 @@ EOL
 
 echo "domain: $domain_name, namespace: $name_space , slug_domain_name: $slug_domain_name, repo_url: $repo_url"
 
+
+cat <<EOL > instructions.yaml
+
+kubectl apply -f init.yaml && 
+kubectl apply -f namespace.yaml && 
+kubectl apply -f prod-env.yaml && 
+kubectl apply -f deploy.yaml && 
+kubectl apply -f service.yaml && 
+kubectl apply -f ingress.yaml
+
+
+curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash && helm repo add jetstack https://charts.jetstack.io && 
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx && helm repo add stable https://charts.helm.sh/stable && helm repo update && kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml && helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --version v1.5.4 --set global.leaderElection.namespace=cert-manager --set leader-elect=false --set installCRDs=true --set prometheus.enabled=false
+
+helm install ${ingress_name} ingress-nginx/ingress-nginx --namespace ${name_space} --create-namespace --version 4.11.1 --values=nginx/values.yaml --set controller.admissionWebhooks.enabled=false
+EOL
+
+
 echo "✅ init.yaml"
 echo "✅ namespace.yaml"
 echo "✅ prod-env.yaml"
@@ -929,7 +947,7 @@ echo "🟢 deploy your application with this order 👇"
 echo "────────⋆⋅☆⋅⋆────────"
 
 echo "👇 👇 👇 👇 👇"
-echo "kubectl apply -f init.yaml && \t
+echo "kubectl apply -f init.yaml && 
 kubectl apply -f namespace.yaml && \t
 kubectl apply -f prod-env.yaml && \t
 kubectl apply -f deploy.yaml && \t
